@@ -1,0 +1,27 @@
+body {
+  background: #eee;
+  font-family:"Nunito Semibold"
+}
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
+}
+
+#graph-id {
+  width: 100% !important;
+  height: 100% !important;
+}
+#graph-id {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+svg[name='svg-container-graph-id'] {
+  width: 500% !important;
+  height: 100% !important;
+  flex: 1;
+}
+#graph-id-graph-wrapper {
+  height: 4000px;
+}
