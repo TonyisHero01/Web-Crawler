@@ -14,15 +14,15 @@ This project is a web crawler application based on Python, Node.js, and GraphQL.
 - [License](#license)
 
 ### Requirements
-    •	Linux, Windows, MacOS
-    •	[Docker](https://www.docker.com/)
-    •	[Docker Compose](https://docs.docker.com/compose/)     
+- Linux, Windows, MacOS
+- [Docker](https://www.docker.com/)
+- [Docker Compose](https://docs.docker.com/compose/)
 
 **For building locally**
 
-    •	[Python](https://www.python.org/) 3.9.1rc1
-    •	[Node](https://nodejs.org/en) v20.14.0
-    •	[React](https://react.dev/) 18.3.1
+- [Python](https://www.python.org/) 3.9.1rc1
+- [Node](https://nodejs.org/en) v20.14.0
+- [React](https://react.dev/) 18.3.1
 
 
 ### Features
