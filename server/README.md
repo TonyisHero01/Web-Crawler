@@ -1,4 +1,4 @@
-# Server - Web Crawler Backend
+# Server - Web Crawler
 
 ## Introduction
 This is the backend part of the Web Crawler project. It handles the scheduling, data management, and GraphQL API used to fetch the crawled data. The backend is built with [**Node.js**](https://nodejs.org/en), [**Express**](https://expressjs.com/), and [**MongoDB**](https://www.mongodb.com). It also interfaces with the [**Python**](https://www.python.org/) crawler to store the scraped data into MongoDB.
