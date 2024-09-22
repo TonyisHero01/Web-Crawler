@@ -1,21 +1,17 @@
 # Web Crawler
 This project is a web crawler application based on Python, Node.js, and GraphQL. It can scrape links and their content from specified web pages and store the data in a MongoDB database. The front end uses React and Vite to display the scraped page data and presents the relationships between pages through a graphical interface.
 
-## Table of Contents
-
-- [Web Crawler](#web-crawler)
-  - [Table of Contents](#table-of-contents)
-    - [Requirements](#requirements)
-    - [Features](#features)
-    - [Project Architecture](#project-architecture)
-    - [Installation and Running](#installation-and-running)
-      - [Local running](#local-running)
-      - [Run Using Docker Images](#run-using-docker-images)
-    - [Usage:](#usage)
-    - [Client Features](#client-features)
-    - [Server Features](#server-features)
-    - [Python Crawler Features](#python-crawler-features)
-    - [License](#license)
+- [Requirements](#requirements)
+- [Features](#features)
+- [Project Architecture](#project-architecture)
+- [Installation and Running](#installation-and-running)
+- [Local running](#local-running)
+- [Run Using Docker Images](#run-using-docker-images)
+- [Usage:](#usage)
+- [Client Features](#client-features)
+- [Server Features](#server-features)
+- [Python Crawler Features](#python-crawler-features)
+- [License](#license)
 
 ### Requirements
     •	Linux, Windows, MacOS
