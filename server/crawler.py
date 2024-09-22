@@ -5,7 +5,6 @@ import sys
 import time
 import pymongo
 import requests
-import threading
 import config
 
 org_link = sys.argv[1]
@@ -34,7 +33,6 @@ def add_db(data):
     mydb = client["db"]
     col = mydb["db"]
 
-    # 如果url 已存在，则先删除数据
     url = data.get('url')
 
     myquery = {"url": url}

@@ -19,7 +19,7 @@ function run_py(url,depth){
   if(depth == null || depth == '' || depth == 'null'){
     depth = 3
   }
-  const py = spawn('python', ['./script.py', url, depth])
+  const py = spawn('python', ['./crawler.py', url, depth])
   let output = ''
   py.stdout.on("data", (data) => {
     output += data.toString()
@@ -40,7 +40,6 @@ app.post('/config', async (req, res) => {
         run_py(url, req.body.depth)
     }
   }else{
-    // 每2分钟执行一次
     job = schedule.scheduleJob('0 * * * * *',()=>{
       console.log(new Date().toISOString())
       run_py(req.body.url, req.body.depth)
