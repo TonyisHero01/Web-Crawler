@@ -62,8 +62,8 @@ web-crawler/
 
 > Images hosted on Docker Hub:
 
-- **Client**: [tonyishero01/nginx](https://hub.docker.com/repository/docker/tonyishero01/webcrawler-client/general)
-- **Server**: [tonyishero01/sc3](https://hub.docker.com/repository/docker/tonyishero01/webcrawler-client/general)
+- **Client**: [tonyishero01/webcrawler-server](https://hub.docker.com/repository/docker/tonyishero01/webcrawler-server/general)
+- **Server**: [tonyishero01/webcrawler-client](https://hub.docker.com/repository/docker/tonyishero01/webcrawler-client/general)
 
 ```bash
 docker pull tonyishero01/webcrawler-server
