@@ -1,4 +1,4 @@
-# Client - Web Crawler Frontend
+# Client - Web Crawler
 
 ## Introduction
 This is the frontend part of the Web Crawler project. It is built using [**React**](https://react.dev/) and [**Vite**](https://vitejs.dev/), and uses [**Apollo Client**](https://www.apollographql.com/docs/) to communicate with the backend's GraphQL API. The client provides a user interface for configuring and visualizing the web crawler data, including a graphical representation of page relationships.

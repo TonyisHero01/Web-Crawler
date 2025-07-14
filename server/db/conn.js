@@ -1,15 +1,14 @@
-const { MONGO_URL } = require('../config.js')
+// db/conn.js
+require('dotenv').config();
 
-let mongoose = require('mongoose')
-let url = MONGO_URL
-mongoose.connect(url)
+const { Pool } = require('pg');
 
-let db = mongoose.connection
-db.on('error', console.error.bind(console, 'connection error:'))
-db.once('open', function () {
-  console.log("Successful connection to " + url)
+const pool = new Pool({
+  user: process.env.DB_USER,
+  host: process.env.DB_HOST,
+  database: process.env.DB_NAME,
+  password: process.env.DB_PASS,
+  port: process.env.DB_PORT,
 });
 
-module.exports = {
-  db
-}
+module.exports = { pool };

@@ -1,91 +1,75 @@
-const express = require('express')
-const cors = require('cors')
-const { createHandler } = require("graphql-http/lib/use/express")
-const { buildSchema } = require("graphql")
-const schedule = require('node-schedule')
-const { db } = require('./db/conn')
-const app = express()
-const port = 3000
+const express = require('express');
+const cors = require('cors');
+const path = require('path');
+const { pool } = require('./db/conn');
+const schema = require('./graphql/schema');
+const websiteRecordsRouter = require('./routes/websiteRecords');
+const { graphqlHTTP } = require('express-graphql');
 
+// ✅ 引入爬虫任务管理器和执行函数
+const { jobManager, runPythonCrawler } = require('./crawler/runner');
 
-app.use(express.json())
-app.use(express.urlencoded({ extended: true }))
+const app = express();
+const port = 3000;
 
-let job = null
+// 中间件
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(cors());
 
-const spawn = require('child_process').spawn;
+// REST 路由（兼容）
+app.use('/api/website-records', websiteRecordsRouter);
 
-function run_py(url,depth){
-  if(depth == null || depth == '' || depth == 'null'){
-    depth = 3
-  }
-  const py = spawn('python', ['./crawler.py', url, depth])
-  let output = ''
-  py.stdout.on("data", (data) => {
-    output += data.toString()
-  })
-  py.on("close", () => {
-    console.log(output)
-  })
-}
+/**
+ * 接收配置并触发爬虫任务（REST 方式）
+ */
+app.post('/api/crawl', async (req, res) => {
+  let { mode, depth, pattern, website_record_id, interval_seconds } = req.body;
 
-app.post('/config', async (req, res) => {
-  del()
-  if(req.body.mode === 0){
-    let url = req.body.url
-    if(!req.body.hasOwnProperty('url') || url == null){
-        res.status(500).json({ message: 'Internal Server Error' });
-        return
-    }else {
-        run_py(url, req.body.depth)
-    }
-  }else{
-    job = schedule.scheduleJob('0 * * * * *',()=>{
-      console.log(new Date().toISOString())
-      run_py(req.body.url, req.body.depth)
-    })
-  }
-  res.json(req.body)
-})
-
-async function del(){
-    await db.collection("db").deleteMany({});
-}
-
-let schema = buildSchema(`
-  type Page {
-    _id: ID
-    url: String
-    from: String
-    title: String
-    time: String
-    links: [String]
+  if (!website_record_id) {
+    return res.status(400).json({ message: 'Missing website_record_id' });
   }
 
-  type Query {
-    pages: [
-      Page
-    ]
+  mode = parseInt(mode);
+  depth = parseInt(depth || 1);
+  interval_seconds = parseInt(interval_seconds || 60);
+
+  const result = await pool.query(
+    'SELECT url FROM website_records WHERE id = $1',
+    [website_record_id]
+  );
+
+  if (result.rowCount === 0) {
+    return res.status(404).json({ message: 'Website record not found' });
   }
-`)
 
-let root = {
-  async pages() {
-    return await db.collection("db").find().toArray()
-  },
-}
+  const url = result.rows[0].url;
 
-app.all(
-  "/graphql",
-  createHandler({
-    schema: schema,
-    rootValue: root,
-  })
-)
+  // ✅ 改为只清除当前任务
+  jobManager.stop(website_record_id);
 
-app.use(cors())
+  if (mode === 0) {
+    console.log("🚀 Immediate mode, running once");
+    await runPythonCrawler(url, depth, pattern, website_record_id);
+  } else {
+    console.log("⏱️ Scheduling periodic crawl task...");
+    jobManager.schedule(url, depth, pattern, website_record_id, interval_seconds);
+  }
 
+  res.json({ message: "Crawler started", mode });
+});
 
+app.post('/api/test', (req, res) => {
+  res.json({ status: 'ok' });
+});
+
+// ✅ GraphQL 接口（用于 startCrawl mutation）
+app.use('/graphql', graphqlHTTP({
+  schema,
+  graphiql: true
+}));
+
+// 启动服务
 app.listen(port, () => {
-  console.log(`web-crawler app listening on port ${port}`)
-})
+  console.log(`Web crawler app listening at http://localhost:${port}`);
+});

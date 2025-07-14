@@ -12,12 +12,16 @@ export default defineConfig({
     },
   },
   server: {
+    host: '0.0.0.0', // ✅ 关键点：让 Vite 监听所有 IP
     proxy: {
-      '/dev': {
-        target: 'http://localhost:3000',  
+      '/api': {
+        target: 'http://server:3000',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/dev/, ''),
       },
-    }
+      '/graphql': {
+        target: 'http://server:3000',
+        changeOrigin: true,
+      },
+    },
   },
 })

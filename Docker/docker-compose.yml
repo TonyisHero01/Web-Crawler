@@ -1,0 +1,40 @@
+version: "3.9"
+
+services:
+  client:
+    build:
+      context: ../client
+      dockerfile: ../Docker/client/Dockerfile
+    ports:
+      - "5173:5173"
+    volumes:
+      - ../client:/app
+      - /app/node_modules
+    command: ["pnpm", "dev"]
+    environment:
+      - NODE_ENV=development
+
+  server:
+    build:
+      context: ../server
+      dockerfile: ../Docker/server/Dockerfile
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+    env_file: ../.env
+
+  db:
+    image: postgres:14
+    restart: always
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: webcrawler
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+volumes:
+  pgdata:

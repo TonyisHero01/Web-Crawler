@@ -1,165 +1,279 @@
-import { ApolloProvider, ApolloClient, InMemoryCache } from '@apollo/client'
-import { useEffect, useMemo, useRef, useState } from 'react'
-import { Space, RadioGroup, Radio, SideSheet,Input } from '@douyinfe/semi-ui'
-import RelationGraph from 'relation-graph-react'
-import { useQuery, gql } from '@apollo/client'
-import { Typography, List } from '@douyinfe/semi-ui'
-
-const client = new ApolloClient({
-  uri: '/dev/graphql',
-  cache: new InMemoryCache(),
-});
-
+import { ApolloProvider, useQuery } from '@apollo/client';
+import client from './apolloClient';
+import { GET_PAGES, GET_WEBSITE_RECORDS } from './graphql/queries';
+import { CrawlMode } from './constants';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import {
+  Space, RadioGroup, Radio, SideSheet,
+  Input, Typography, List, Button, Select
+} from '@douyinfe/semi-ui';
+import RelationGraph from 'relation-graph-react';
 
 function Index() {
-  const { Title } = Typography
+  const { Title } = Typography;
+  const [mode, setMode] = useState(CrawlMode.INACTIVE);
+  const [url, setUrl] = useState('');
+  const [depth, setDepth] = useState('');
+  const [pattern, setPattern] = useState('');
+  const [intervalSeconds, setIntervalSeconds] = useState(60);
+  const [selectedRecordId, setSelectedRecordId] = useState(null);
+  const [visible, setVisible] = useState(false);
+  const [selectedNodeId, setSelectedNodeId] = useState('');
+  const [pollCount, setPollCount] = useState(0);
+  const graphRef = useRef(null);
+  // 在顶部 useState 中新增
+  const [shouldPoll, setShouldPoll] = useState(false);
 
-  const [visible, setVisible] = useState(false)
-  const [nodes, setNodes] = useState([{ id: 'root', opacity: 0 }])
-  const [lines, setLines] = useState([])
-  const [id, setId] = useState('')
-  const [value, setValue] = useState(0)
+  const { data: recordsData, refetch: refetchRecords } = useQuery(GET_WEBSITE_RECORDS);
+  const { data: pageData, refetch } = useQuery(GET_PAGES, {
+    variables: { website_record_id: selectedRecordId },
+    skip: selectedRecordId === null,
+    fetchPolicy: 'no-cache',
+    notifyOnNetworkStatusChange: true,
+  });
 
-  const changeMode = (mode,url,depth) =>{
-    fetch("/dev/config", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        mode:mode,
-        url:url,
-        depth:depth
-      }),
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        console.log("Success:", data)
-      })
-      .catch((error) => {
-        console.error("Error:", error)
+  const pages = pageData?.pages || [];
+
+  const handleModeChange = async (e) => {
+    const newMode = e.target.value;
+    setMode(newMode);
+
+    if (!selectedRecordId) return;
+
+    await fetch(`/api/website-records/${selectedRecordId}`, {
+  method: "PATCH",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    active: String(newMode === CrawlMode.ACTIVE),
+    interval_seconds: intervalSeconds,
+    depth: parseInt(depth || "1"),
+    pattern: pattern || ".*",
+  }),
+}).then(res => res.json())
+      .then(data => {
+        console.log("📝 PATCH response:", data);
       });
-  }
 
-  const onChange = (e) => {
-    let url = document.getElementById("url")
-    let depth = document.getElementById("depth")
-    setValue(e.target.value)
-    changeMode(e.target.value,url.value, depth.value)
-  }
+    const should = newMode === CrawlMode.ACTIVE;
+    console.log("🔄 Mode updated to:", newMode);
+    console.log("📶 shouldPoll set to", should);
+    setShouldPoll(should);
 
-  const change = () => {
-    setVisible(!visible)
-  }
+    await refetchRecords();
 
-  const graphRef = useRef(null)
-  const graphOptions = {
-    defaultNodeBorderWidth: 0,
-    defaultNodeColor: 'rgba(238, 178, 94, 1)',
-    defaultLineShape: 1,
-    layouts: [
-      {
-        layoutName: 'center'
-      }
-    ],
-    defaultJunctionPoint: 'border'
-  }
-
-  const getPagesQuery = gql`
-    {
-      pages {
-        url,_id,from,title,links,time
-      }
+    // ✅ 立即触发一次轮询（不用等 interval）
+    if (should) {
+      setPollCount(prev => prev + 1);
+      await refetch({ website_record_id: selectedRecordId });
     }
-  `
+  };
 
-  const onNodeClick = (nodeObject) => {
-    setId(nodeObject.id)
-    change()
-  }
+  const nodes = useMemo(() => {
+    if (pages.length === 0) return [{ id: 'root', text: 'No Data', opacity: 0 }];
+    return pages.map(p => ({
+      id: String(p._id),
+      text: String(p.title || p.url || `Page ${p._id}`),
+    }));
+  }, [pages]);
 
-  const showGraph = async () =>{
-    const __graph_json_data = {
-      nodes: nodes,
-      lines: lines
+  const lines = useMemo(() =>
+    pages
+      .filter(p => p.from_id != null)
+      .map(p => ({
+        from: String(p.from_id),
+        to: String(p._id),
+      })), [pages]);
+
+  const pageDetail = useMemo(() =>
+    pages.find(p => p._id === selectedNodeId), [pages, selectedNodeId]);
+
+  useEffect(() => {
+    console.log("👁️‍🗨️ shouldPoll changed to", shouldPoll);
+  }, [shouldPoll]);
+
+  useEffect(() => {
+    if (recordsData?.website_records?.length > 0 && !selectedRecordId) {
+      setSelectedRecordId(recordsData.website_records[0].id);
     }
+  }, [recordsData]);
 
-    const graphInstance = graphRef.current?.getInstance()
-    if (graphInstance) {
-      await graphInstance.setJsonData(__graph_json_data)
-      await graphInstance.moveToCenter()
-      await graphInstance.zoomToFit()
+  useEffect(() => {
+    if (!selectedRecordId || !shouldPoll) return;
+
+    const timer = setInterval(() => {
+      setPollCount(prev => {
+        const next = prev + 1;
+        console.log(`🔁 [Polling #${next}] Refetching for record:`, selectedRecordId);
+        return next;
+      });
+
+      refetch({ website_record_id: String(selectedRecordId) }).then(res => {
+        console.log(`📥 [Polling Result] Pages received:`, res.data.pages?.length);
+        console.log(res.data.pages);
+      }).catch(err => {
+        console.error("❌ Refetch error:", err);
+      });
+    }, intervalSeconds * 1000);
+
+    return () => clearInterval(timer);
+  }, [selectedRecordId, shouldPoll, intervalSeconds]);
+
+  useEffect(() => {
+    if (pageData?.pages) {
+      console.log("🧩 pageData updated:", pageData.pages.length, "pages");
     }
-  }
+  }, [pageData]);
 
-  useEffect(()=>{
-    showGraph()
-  },[
-    nodes,lines
-  ])
+  useEffect(() => {
+    if (selectedRecordId) {
+      console.log("📡 Refetching for record:", selectedRecordId);
+      setPollCount(0);
+      refetch({ website_record_id: selectedRecordId });
+    }
+  }, [selectedRecordId]);
 
-  setInterval(()=>{
-    refetch()
-  },10000)
+  useEffect(() => {
+    const graphInstance = graphRef.current?.getInstance?.();
 
+    if (graphInstance && pages.length > 0) {
+      console.log("🎨 [UI Refresh] Updating graph");
+      console.log("📊 Nodes:", nodes);
+      console.log("🔗 Lines:", lines);
 
-  const { data, refetch } = useQuery(getPagesQuery,{
-  })
+      graphInstance.clearData?.();
+      graphInstance.setJsonData({ nodes: [...nodes], lines: [...lines] });
+      graphInstance.refresh?.();
+      graphInstance.relayout?.();
+      graphInstance.zoomToFit?.();
+    }
+  }, [pages]);  // ✅ 依赖 pages，不是 pollCount！
 
-  useEffect(()=>{
-    setNodes(data?.pages.map((item)=>({
-      id: item._id,
-      text: item.title
-    })))
-    setLines(data?.pages.filter((item)=>item.from).map((item)=>({
-      from: item.from,
-      to: item._id
-    })))
-  }, [data])
+  const handleStartCrawling = async () => {
+    const createRes = await fetch("/api/website-records", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        url,
+        label: `Auto ${new Date().toISOString()}`,
+        regexp: pattern || ".*",
+        periodicity: `${intervalSeconds}`, // 改成秒数字符串
+        active: true,
+        tags: [],
+      }),
+    });
 
-  const deatil = useMemo(()=>data?.pages,[data])
+    const newRecord = await createRes.json();
+    const newId = newRecord.id;
 
-  return <>
-    <div className="h-screen w-screen p-4">
-      <div className="text-9">Tony's Crawling List</div>
-      <Space vertical spacing='loose' align='start' className='mt-4'>
-        <RadioGroup type='button' onChange={onChange} value={value} aria-label="模式选择">
-          <Radio value={1}>Active Mode</Radio>
-          <Radio value={0}>InActive Mode</Radio>
-        </RadioGroup>
-        <Input placeholder='url' id="url"></Input>
-        <Input placeholder='depth' id="depth" type='number' min="2"></Input>
-      </Space>
-      <div className='w-full border border-red border-solid mt-4' style={{height:'calc(100% - 120px)'}}>
-        <RelationGraph ref={graphRef} options={graphOptions} onNodeClick={onNodeClick} />
-      </div>
-    </div>
-    <SideSheet title="Node Detail" visible={visible} onCancel={change}>
-      {deatil && id.length > 0 && deatil.filter((item) => item?._id === id).map(item=>(
-        <>
-          <Title>{item.title}</Title>
-          <Title heading={5}>{item.url}</Title>
-          <Title heading={5}>{item.time.slice(0, 19)}</Title>
-          <List
-            size="small"
-            bordered
-            dataSource={item.links}
-            renderItem={item => <List.Item>{item}</List.Item>}
-          />
-        </>
-      ))}
-    </SideSheet>
-  </>
-}
+    await refetchRecords();
+    setSelectedRecordId(newId);
 
-function App() {
+    await fetch("/api/crawl", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        mode,
+        url,
+        depth: parseInt(depth || "1"),
+        pattern: pattern || ".*",
+        website_record_id: newId,
+        interval_seconds: intervalSeconds,
+      }),
+    });
+
+    console.log("🚀 Crawling started...");
+
+    setTimeout(() => {
+      refetch({ website_record_id: newId });
+    }, 8000);
+  };
+
   return (
     <>
+      <div className="p-4">
+        <div className="text-3xl font-bold mb-4">🌐 Tony's Web Crawler</div>
+        <Space vertical spacing="loose" align="start">
+          <RadioGroup type="button" value={mode} onChange={handleModeChange}>
+            <Radio value={CrawlMode.ACTIVE}>Active</Radio>
+            <Radio value={CrawlMode.INACTIVE}>Inactive</Radio>
+          </RadioGroup>
+
+          <Select
+            value={selectedRecordId}
+            onChange={(id) => setSelectedRecordId(id)}
+            placeholder="Select a record"
+            style={{ width: 320 }}
+          >
+            {(recordsData?.website_records || []).map(r => (
+              <Select.Option key={r.id} value={r.id}>
+                {r.label}
+              </Select.Option>
+            ))}
+          </Select>
+
+          <Input placeholder="URL" value={url} onChange={setUrl} />
+          <Input placeholder="Depth" type="number" value={depth} onChange={setDepth} />
+          <Input placeholder="Regex Pattern" value={pattern} onChange={setPattern} />
+          Fill seconds:
+          <Input
+            placeholder="Polling interval (seconds)"
+            type="number"
+            value={intervalSeconds}
+            onChange={v => setIntervalSeconds(parseInt(v))}
+          />
+
+          <Button onClick={handleStartCrawling} type="primary">
+            🚀 Start Crawling
+          </Button>
+
+          <Button onClick={() => refetch({ website_record_id: selectedRecordId })}>
+            🔄 Refresh
+          </Button>
+
+          <div>🔁 Polling Count: {pollCount}</div>
+        </Space>
+
+        <div className="w-full border mt-4" style={{ height: '70vh' }}>
+          <RelationGraph
+            key={selectedRecordId + '-' + pollCount}
+            ref={graphRef}
+            options={{
+              defaultNodeBorderWidth: 0,
+              defaultNodeColor: '#78c8e2',
+              defaultLineShape: 1,
+              layouts: [{ layoutName: 'center' }],
+              defaultJunctionPoint: 'border',
+            }}
+            onNodeClick={node => {
+              setSelectedNodeId(node.id);
+              setVisible(true);
+            }}
+          />
+        </div>
+      </div>
+
+      <SideSheet title="Page Detail" visible={visible} onCancel={() => setVisible(false)}>
+        {pageDetail && (
+          <>
+            <Title>{pageDetail.title}</Title>
+            <div>{pageDetail.url}</div>
+            <div>{pageDetail.time?.slice(0, 19)}</div>
+            <List
+              header="Links"
+              dataSource={pageDetail.links}
+              renderItem={item => <List.Item>{item}</List.Item>}
+            />
+          </>
+        )}
+      </SideSheet>
+    </>
+  );
+}
+
+export default function App() {
+  return (
     <ApolloProvider client={client}>
       <Index />
     </ApolloProvider>
-  </>
-  )
+  );
 }
-
-export default App

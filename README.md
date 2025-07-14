@@ -1,163 +1,120 @@
-# Web Crawler
-This project is a web crawler application based on Python, Node.js, and GraphQL. It can scrape links and their content from specified web pages and store the data in a MongoDB database. The front end uses React and Vite to display the scraped page data and presents the relationships between pages through a graphical interface.
+# 🌐 Web Crawler
 
-## Table of Contents
+This project is a full-stack web crawler using **Python**, **Node.js**, **PostgreSQL**, and **React**. It crawls web pages, extracts internal links and titles, stores the data in a **PostgreSQL** database, and visualizes the results in a graph interface using **Relation Graph**.
 
-- [Web Crawler](#web-crawler)
-  - [Table of Contents](#table-of-contents)
-    - [Requirements](#requirements)
-    - [Features](#features)
-    - [Project Architecture](#project-architecture)
-    - [Installation and Running](#installation-and-running)
-      - [Local running](#local-running)
-      - [Run Using Docker Images](#run-using-docker-images)
-    - [Usage:](#usage)
-    - [Client Features](#client-features)
-    - [Server Features](#server-features)
-    - [Python Crawler Features](#python-crawler-features)
-    - [License](#license)
+---
 
-### Requirements
-    •	Linux, Windows, MacOS
-    •	[Docker](https://www.docker.com/)
-    •	[Docker Compose](https://docs.docker.com/compose/)     
+## 📦 Requirements
 
-**For building locally**
+- [Docker](https://www.docker.com/)
+- [Docker Compose](https://docs.docker.com/compose/)
+- (Optional for local development)
+  - [Python 3.9+](https://www.python.org/)
+  - [Node.js v20+](https://nodejs.org/)
+  - [pnpm](https://pnpm.io/)
+  - [PostgreSQL](https://www.postgresql.org/)
 
-    •	[Python](https://www.python.org/) 3.9.1rc1
-    •	[Node](https://nodejs.org/en) v20.14.0
-    •	[React](https://react.dev/) 18.3.1
+---
 
+## ✨ Features
 
-### Features
+### ✅ Python Crawler
+- Crawl specified URLs to a certain depth.
+- Extract `<title>` and all internal links.
+- Store data (url, title, time, from_id, links) into PostgreSQL.
 
-	•	Web Crawling: Crawl web pages from a specified URL and automatically fetch internal links.
-	•	Data Storage: The crawled page data (URL, title, time, links) is stored in a MongoDB database.
-	•	Frontend Display: The React frontend visualizes the page data and their relationships using Relation Graph.
-	•	GraphQL Queries: The frontend uses Apollo Client to query data from the backend via GraphQL.
+### ✅ Backend (Node.js + Express + GraphQL)
+- Expose a GraphQL API for querying crawled data.
+- Schedule crawl tasks using `node-schedule`.
+- Manage page relationships and store executions.
 
-### Project Architecture
+### ✅ Frontend (React + Vite)
+- Input crawl target and depth.
+- Toggle crawl mode (Active/Inactive).
+- Display site structure in an interactive relation graph.
 
-    •	Server + Crawler: Node.js, Express, GraphQL, MongoDB, Python, Requests, Pymongo
-        - This program crawles webs from the given URL and save it into MongoDB.
-        - Implemented by Node + python. Python crawles pages and save into MongoDB. Node reads data from MongoDB and resolve request from client using GraphQL.
-	•	Client: React, Vite, Apollo Client, Relation Graph
-        - This program reads url data from sever and shows graph in website.    
-        - Implemented by React. Using library relation-graph-react to show URL relation graph on the page. 
-	
-### Installation and Running
-#### Local running
-**Clone the repository:**
+---
+
+## 🏗️ Project Structure
+web-crawler/   
+├── client/         # React frontend   
+├── server/         # Node.js backend + Python crawler   
+├── Docker/         # Dockerfiles and compose config   
+└── README.md   
+---
+### 🐳 Using Docker Images
+
+> Images hosted on Docker Hub:
+
+- **Client**: [tonyishero01/nginx](https://hub.docker.com/repository/docker/tonyishero01/nginx/general)
+- **Server**: [tonyishero01/sc3](https://hub.docker.com/repository/docker/tonyishero01/sc3/general)
+
+```bash
+docker pull tonyishero01/nginx
+docker pull tonyishero01/sc3
+
+docker run -d --name="server-container" -p 4000:4000 tonyishero01/sc3
+docker run -d --name="client-container" -p 3000:3000 tonyishero01/nginx
+```
+### 🧑‍💻 Local Development
+
+1. Clone the repository
 ```bash
 git clone https://github.com/your-repo/web-crawler.git
+cd web-crawler
 ```
-**Server repository:**
+2. Setup PostgreSQL
+	•	Ensure PostgreSQL is running (e.g., localhost:5432)
+	•	Create a database named webcrawler
+	•	Update .env file with connection info:
+```
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=webcrawler
+DB_USER=your_username
+DB_PASS=your_password
+```
+3. Setup Server
 ```bash
-cd web-crawler/server
+cd server
+npm install
+pip install -r requirements.txt
 ```
-Install dependencies:
-```bash
-npm i
-```
-```bash
-pip install -r requirement.txt
-```
-Configure MongoDB connection:   
-•	Update the MongoDB connection URL in server/config.js and server/config.py.
-Start the server:
+Start the backend:
 ```bash
 node index.js
 ```
-**Client repository:**
+4. Setup Client
 ```bash
-cd web-crawler/client
+cd ../client
+pnpm install
+pnpm run dev
 ```
-Install dependencies:
-- Run ```npm i -g pnpm```, ```pnpm i```
-- Start development mode: ```npm run dev```, then access: [http://localhost:5173/](http://localhost:5173/)
-- Start production mode: ```npm run build``` and ```npm run start```, then access: [http://localhost:4173/](http://localhost:4173/)
+Access the frontend at http://localhost:5173
 
-#### Run Using Docker Images
+### 📌 Usage
+	1.	Open the frontend and enter the target URL, crawl depth, regex and seconds(If active mode).
+	2.	Set crawl mode to Active or Inactive to start crawling.
+	3.	After crawling finishes you can see the results.
+	4.	Click nodes to inspect page titles, timestamps, and links.
 
-You can also run both the client and server using pre-built Docker images from Docker Hub. The images are hosted at:
-- [Client Image on Docker Hub](https://hub.docker.com/repository/docker/tonyishero01/nginx/general)
-- [Server Image on Docker Hub](https://hub.docker.com/repository/docker/tonyishero01/sc3/general)
+---
 
-**Steps to run:**
+#### 🧠 Architecture Summary
+	•	Python crawler runs in child process and writes directly to PostgreSQL.    
+	•	Express backend triggers crawls, handles periodic jobs, and serves GraphQL data.
+	•	React frontend uses Apollo Client to fetch data and renders an interactive graph.
 
-  1.	Pull the Docker images from Docker Hub:
-  ```bash
-  docker pull tonyishero01/nginx
-  docker pull tonyishero01/sc3
-  ```
-  2.	Run the server Docker container:
-  ```bash
-  docker run -d --name="server-container" -p 4000:4000 tonyishero01/sc3
-  ```
-  3.	Run the client Docker container:
-  ```bash
-  docker run -d --name="client-container" -p 3000:3000 tonyishero01/nginx
-  ```
-If you prefer to build the Docker images locally, you can follow the steps below:   
+---
 
-**Build and Run the Server Docker Image Locally**
-  1.	Navigate to the server directory:
-  ```bash
-  cd server
-  ```
-  2.	Build the Docker image:
-  ```bash
-  docker build -t web-crawler-server .
-  ```
-  3.	Run the Docker container:
-  ```bash
-  docker run -d -p 4000:4000 web-crawler-server
-  ```
+#### 🐍 Python Crawler Details
+	•	Uses requests, re, psycopg2, and dotenv.
+	•	Recursively crawls and inserts pages with execution_id, from_id, etc.
+	•	Tracks visited URLs to avoid duplicates.
+	•	Errors are caught and fallback records inserted to DB.
 
-**Build and Run the Client Docker Image Locally**
+---
 
-	1.	Navigate to the client directory:
-  ```bash
-  cd client
-  ```
-  2.	Build the Docker image:
-  ```bash
-  docker build -t web-crawler-client .
-  ```
-  3.	Run the Docker container:
-  ```bash
-  docker run -d -p 3000:3000 web-crawler-client
-  ```
+📄 License
 
-
-
-### Usage:
-1. In the client application, enter the URL you want to crawl and specify the depth.   
-2. Choose the crawler mode:   
-	•	Active Mode: Starts crawling immediately. Schedules the crawling task to run periodically.   
-	•	Inactive Mode: Shows crawled data(You need after typing new url and depth switch to Active mode and wait for few minutes, then switch to Inactive mode.).
-3. If website does not show data graph for long time, please check command line if there is some error.   
-
-### Client Features
-
-	•	URL Input: Allows users to enter the URL to be crawled.
-	•	Depth Selection: Allows users to specify the depth of the crawling process.
-	•	Graphical Visualization: Displays page nodes and link relationships, with clickable nodes to view detailed information.
-	•	Mode Selection: Supports manual and scheduled crawling modes.
-
-### Server Features
-
-	•	GraphQL API: Provides a GraphQL API for querying crawled data.
-	•	Scheduled Tasks: Implements scheduled tasks using Node.js’s node-schedule to periodically crawl based on user settings.
-	•	Data Management: Uses MongoDB to store and manage the crawled data.
-
-### Python Crawler Features
-
-	•	Web Scraping: Uses the requests library to scrape webpage content.
-	•	Link Extraction: Uses regular expressions to extract links from the page.
-	•	Data Storage: Stores crawled page information in MongoDB.
-	•	Multithreading: Implements multithreaded crawling using _thread to improve crawling efficiency.
-
-### License
-
-MIT License
+MIT License © 2025 tonyishero01
