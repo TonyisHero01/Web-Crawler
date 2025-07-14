@@ -156,8 +156,6 @@ Access the frontend at http://localhost:5173
 	•	Web Scraping: Uses the requests library to scrape webpage content.
 	•	Link Extraction: Uses regular expressions to extract links from the page.
 	•	Data Storage: Stores crawled page information in PostgreSQL.
-	•	Multithreading: Implements multithreaded crawling using _thread to improve crawling efficiency.
-
 ### License
 
 MIT License
