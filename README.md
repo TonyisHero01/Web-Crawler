@@ -62,15 +62,15 @@ web-crawler/
 
 > Images hosted on Docker Hub:
 
-- **Client**: [tonyishero01/nginx](https://hub.docker.com/repository/docker/tonyishero01/nginx/general)
-- **Server**: [tonyishero01/sc3](https://hub.docker.com/repository/docker/tonyishero01/sc3/general)
+- **Client**: [tonyishero01/nginx](https://hub.docker.com/repository/docker/tonyishero01/webcrawler-client/general)
+- **Server**: [tonyishero01/sc3](https://hub.docker.com/repository/docker/tonyishero01/webcrawler-client/general)
 
 ```bash
-docker pull tonyishero01/nginx
-docker pull tonyishero01/sc3
+docker pull tonyishero01/webcrawler-server
+docker pull tonyishero01/webcrawler-client
 
-docker run -d --name="server-container" -p 4000:4000 tonyishero01/sc3
-docker run -d --name="client-container" -p 3000:3000 tonyishero01/nginx
+docker run -d --name="server-container" -p 4000:4000 tonyishero01/webcrawler-server
+docker run -d --name="client-container" -p 3000:3000 tonyishero01/webcrawler-client
 ```
 ### 🧑‍💻 Local Development
 
