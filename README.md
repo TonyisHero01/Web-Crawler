@@ -79,10 +79,10 @@ docker run -d --name="client-container" -p 3000:3000 tonyishero01/webcrawler-cli
 git clone https://github.com/your-repo/web-crawler.git
 cd web-crawler
 ```
-2. Setup PostgreSQL
-	•	Ensure PostgreSQL is running (e.g., localhost:5432)
-	•	Create a database named webcrawler
-	•	Update .env file with connection info:
+2. Setup PostgreSQL    
+	•	Ensure PostgreSQL is running (e.g., localhost:5432)    
+	•	Create a database named webcrawler    
+	•	Update .env file with connection info:    
 ```
 DB_HOST=localhost
 DB_PORT=5432
@@ -135,7 +135,7 @@ Access the frontend at http://localhost:5173
 1. In the client application, enter the URL you want to crawl and specify the depth.   
 2. Choose the crawler mode:   
 	•	Active Mode: Starts crawling immediately. Schedules the crawling task to run periodically.   
-	•	Inactive Mode: Shows crawled data(You need after typing new url and depth switch to Active mode and wait for few minutes, then switch to Inactive mode.).
+	•	Inactive Mode: Starts crawling immediately but only once.
 3. If website does not show data graph for long time, please check command line if there is some error.   
 
 ### Client Features
