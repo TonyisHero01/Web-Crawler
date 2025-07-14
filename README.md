@@ -149,7 +149,7 @@ Access the frontend at http://localhost:5173
 
 	•	GraphQL API: Provides a GraphQL API for querying crawled data.
 	•	Scheduled Tasks: Implements scheduled tasks using Node.js’s node-schedule to periodically crawl based on user settings.
-	•	Data Management: Uses MongoDB to store and manage the crawled data.
+	•	Data Management: Uses PostgreSQL to store and manage the crawled data.
 
 ### Python Crawler Features
 
