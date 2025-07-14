@@ -49,13 +49,14 @@ This project is a full-stack web crawler using **Python**, **Node.js**, **Postgr
 - Display site structure in an interactive relation graph.
 
 ---
-
 ## 🏗️ Project Structure
+<pre><code>
 web-crawler/   
 ├── client/         # React frontend   
 ├── server/         # Node.js backend + Python crawler   
 ├── Docker/         # Dockerfiles and compose config   
 └── README.md   
+</code></pre>
 ---
 ### 🐳 Using Docker Images
 
