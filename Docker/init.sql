@@ -1,0 +1,30 @@
+CREATE TABLE IF NOT EXISTS website_records (
+  id SERIAL PRIMARY KEY,
+  url TEXT NOT NULL,
+  label TEXT NOT NULL,
+  regexp TEXT NOT NULL,
+  periodicity VARCHAR(10) NOT NULL DEFAULT 'hour',
+  active BOOLEAN NOT NULL DEFAULT true,
+  tags TEXT[] DEFAULT '{}',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS executions (
+  id SERIAL PRIMARY KEY,
+  website_record_id INTEGER REFERENCES website_records(id) ON DELETE CASCADE,
+  start_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  end_time TIMESTAMP,
+  status TEXT DEFAULT 'pending',
+  crawled_count INTEGER DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS pages (
+  id SERIAL PRIMARY KEY,
+  execution_id INTEGER REFERENCES executions(id) ON DELETE CASCADE,
+  url TEXT NOT NULL,
+  title TEXT,
+  from_id INTEGER,
+  time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  links TEXT[]
+);
