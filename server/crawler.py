@@ -14,10 +14,8 @@ USER_AGENT_HEADER = {
 
 visited = set()
 
-# 加载环境变量
 load_dotenv()
 
-# 全局连接（懒加载，仅 insert 时用）
 def get_db_conn():
     return psycopg2.connect(
         host=os.getenv("DB_HOST"),

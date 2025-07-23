@@ -5,19 +5,7 @@ This project is a full-stack web crawler using **Python**, **Node.js**, **Postgr
 ---
 
 ## 📦 Requirements
-- [Requirements](#requirements)
-- [Features](#features)
-- [Project Architecture](#project-architecture)
-- [Installation and Running](#installation-and-running)
-- [Local running](#local-running)
-- [Run Using Docker Images](#run-using-docker-images)
-- [Usage:](#usage)
-- [Client Features](#client-features)
-- [Server Features](#server-features)
-- [Python Crawler Features](#python-crawler-features)
-- [License](#license)
 
-### Requirements
 - [Docker](https://www.docker.com/)
 - [Docker Compose](https://docs.docker.com/compose/)
 - (Optional for local development)
@@ -27,9 +15,6 @@ This project is a full-stack web crawler using **Python**, **Node.js**, **Postgr
   - [PostgreSQL](https://www.postgresql.org/)
 
 ---
-- [Python](https://www.python.org/) 3.9.1rc1
-- [Node](https://nodejs.org/en) v20.14.0
-- [React](https://react.dev/) 18.3.1
 
 ## ✨ Features
 
@@ -130,33 +115,6 @@ Access the frontend at http://localhost:5173
 
 ---
 
-### Usage:
-1. In the client application, enter the URL you want to crawl and specify the depth.   
-2. Choose the crawler mode:   
-	•	Active Mode: Starts crawling immediately. Schedules the crawling task to run periodically.   
-	•	Inactive Mode: Shows crawled data(You need after typing new url and depth switch to Active mode and wait for few minutes, then switch to Inactive mode.).
-3. If website does not show data graph for long time, please check command line if there is some error.   
+📄 License
 
-### Client Features
-
-	•	URL Input: Allows users to enter the URL to be crawled.
-	•	Depth Selection: Allows users to specify the depth of the crawling process.
-	•	Graphical Visualization: Displays page nodes and link relationships, with clickable nodes to view detailed information.
-	•	Mode Selection: Supports manual and scheduled crawling modes.
-
-### Server Features
-
-	•	GraphQL API: Provides a GraphQL API for querying crawled data.
-	•	Scheduled Tasks: Implements scheduled tasks using Node.js’s node-schedule to periodically crawl based on user settings.
-	•	Data Management: Uses MongoDB to store and manage the crawled data.
-
-### Python Crawler Features
-
-	•	Web Scraping: Uses the requests library to scrape webpage content.
-	•	Link Extraction: Uses regular expressions to extract links from the page.
-	•	Data Storage: Stores crawled page information in MongoDB.
-	•	Multithreading: Implements multithreaded crawling using _thread to improve crawling efficiency.
-
-### License
-
-MIT License
+MIT License © 2025 tonyishero01
