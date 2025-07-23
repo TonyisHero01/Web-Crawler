@@ -34,27 +34,28 @@ This project is a full-stack web crawler using **Python**, **Node.js**, **Postgr
 - Display site structure in an interactive relation graph.
 
 ---
-
 ## 🏗️ Project Structure
+<pre><code>
 web-crawler/   
 ├── client/         # React frontend   
 ├── server/         # Node.js backend + Python crawler   
 ├── Docker/         # Dockerfiles and compose config   
 └── README.md   
+</code></pre>
 ---
 ### 🐳 Using Docker Images
 
 > Images hosted on Docker Hub:
 
-- **Client**: [tonyishero01/nginx](https://hub.docker.com/repository/docker/tonyishero01/nginx/general)
-- **Server**: [tonyishero01/sc3](https://hub.docker.com/repository/docker/tonyishero01/sc3/general)
+- **Client**: [tonyishero01/webcrawler-server](https://hub.docker.com/repository/docker/tonyishero01/webcrawler-server/general)
+- **Server**: [tonyishero01/webcrawler-client](https://hub.docker.com/repository/docker/tonyishero01/webcrawler-client/general)
 
 ```bash
-docker pull tonyishero01/nginx
-docker pull tonyishero01/sc3
+docker pull tonyishero01/webcrawler-server
+docker pull tonyishero01/webcrawler-client
 
-docker run -d --name="server-container" -p 4000:4000 tonyishero01/sc3
-docker run -d --name="client-container" -p 3000:3000 tonyishero01/nginx
+docker run -d --name="server-container" -p 4000:4000 tonyishero01/webcrawler-server
+docker run -d --name="client-container" -p 3000:3000 tonyishero01/webcrawler-client
 ```
 ### 🧑‍💻 Local Development
 
@@ -63,10 +64,10 @@ docker run -d --name="client-container" -p 3000:3000 tonyishero01/nginx
 git clone https://github.com/your-repo/web-crawler.git
 cd web-crawler
 ```
-2. Setup PostgreSQL
-	•	Ensure PostgreSQL is running (e.g., localhost:5432)
-	•	Create a database named webcrawler
-	•	Update .env file with connection info:
+2. Setup PostgreSQL    
+	•	Ensure PostgreSQL is running (e.g., localhost:5432)    
+	•	Create a database named webcrawler    
+	•	Update .env file with connection info:    
 ```
 DB_HOST=localhost
 DB_PORT=5432
@@ -115,6 +116,32 @@ Access the frontend at http://localhost:5173
 
 ---
 
-📄 License
+### Usage:
+1. In the client application, enter the URL you want to crawl and specify the depth.   
+2. Choose the crawler mode:   
+	•	Active Mode: Starts crawling immediately. Schedules the crawling task to run periodically.   
+	•	Inactive Mode: Starts crawling immediately but only once.
+3. If website does not show data graph for long time, please check command line if there is some error.   
 
-MIT License © 2025 tonyishero01
+### Client Features
+
+	•	URL Input: Allows users to enter the URL to be crawled.
+	•	Depth Selection: Allows users to specify the depth of the crawling process.
+	•	Graphical Visualization: Displays page nodes and link relationships, with clickable nodes to view detailed information.
+	•	Mode Selection: Supports manual and scheduled crawling modes.
+
+### Server Features
+
+	•	GraphQL API: Provides a GraphQL API for querying crawled data.
+	•	Scheduled Tasks: Implements scheduled tasks using Node.js’s node-schedule to periodically crawl based on user settings.
+	•	Data Management: Uses PostgreSQL to store and manage the crawled data.
+
+### Python Crawler Features
+
+	•	Web Scraping: Uses the requests library to scrape webpage content.
+	•	Link Extraction: Uses regular expressions to extract links from the page.
+	•	Data Storage: Stores crawled page information in PostgreSQL.
+### License
+
+MIT License
+
